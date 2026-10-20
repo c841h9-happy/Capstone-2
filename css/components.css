@@ -1,0 +1,501 @@
+/* 
+===================================================================
+                            Nav Bar
+===================================================================
+  */
+.navbar {   
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0px 2px 4px #dfdfdf;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 10;
+
+    /*
+     * An anchor rather than a div since 2026-09-21, so the first two of these undo what a browser
+     * does to one: the shop's name reads as a heading in everything but markup, and it has no
+     * business turning blue and underlined. The hover tint is then the only thing saying the corner
+     * is clickable at all -- which is enough here, because people try clicking a logo whether or
+     * not anything invited them to.
+     *
+     * :focus-visible is spelled out because the outline a browser draws by default would trace a
+     * 50px circle and a line of text with no padding between them, and there is no keyboard hint
+     * left over once the underline is gone.
+     */
+    .nav-con1 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: inherit;
+        text-decoration: none;
+        border-radius: 6px;
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .site-name {
+            font-size: 1.15rem;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        &:hover .site-name {
+            color: #32715e;
+        }
+
+        &:focus-visible {
+            outline: 2px solid #32715e;
+            outline-offset: 3px;
+        }
+    }
+
+    /*
+     * Shared by the links inside .nav-con2 and by the basket link, which sits outside it so that
+     * the narrow-screen menu cannot swallow the badge. That is why this rule lives at .navbar
+     * level rather than nested one deeper, where it started: the basket is a nav link that is no
+     * longer a child of the nav links.
+     */
+    .nav-link {
+        text-decoration: none;
+        color: #333;
+        padding: 8px 12px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background-color: #ddd;
+        }
+
+        &.active {
+            background-color: #ddd;
+            font-weight: 600;
+        }
+    }
+
+    /*
+     * The basket link is a drawing of a cart with a count sitting on its corner, so it needs to be
+     * a positioning context and to centre a 22px icon in a box otherwise sized by text. inline-grid
+     * rather than flex because there is one child to place and place-items does it in a line.
+     *
+     * order puts it back on the right of the other links on a desktop, where the markup can no
+     * longer do it: the anchor has to come before the menu in the document so that it stays out
+     * of the collapsing panel, and this is what undoes that at the width where the panel is not
+     * collapsing. Its partner is the margin-left: auto on .nav-con2 below -- the auto margin takes
+     * the free space, so the menu and the basket end up flush right together.
+     */
+    .nav-cart {
+        position: relative;
+        display: inline-grid;
+        place-items: center;
+        order: 3;
+        /* The same 15px .nav-con2 puts between its own links, so the basket does not read as
+           belonging to a different group from the ones beside it. */
+        margin-left: 15px;
+        /* Squarer than the text links either side: padding meant for a word leaves an icon
+           swimming in a wide box that no longer looks pressable. */
+        padding: 8px 10px;
+    }
+
+    /*
+     * The badge. Half of it hangs off the icon's top-right, which is what makes it read as
+     * something stuck on rather than part of the drawing.
+     *
+     * min-width plus padding rather than a fixed width: "3" must come out a circle, and "99+"
+     * has to stay a legible pill rather than being clipped. border-radius is deliberately
+     * larger than any width it can reach, so the ends stay fully round at every length.
+     */
+    .nav-cart-count {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 18px;
+        padding: 0 5px;
+        border-radius: 999px;
+        /* The navbar is white and the icon is dark; the ring keeps the red disc from
+           touching the cart's own strokes where they pass underneath it. */
+        border: 2px solid #fff;
+        background-color: #d13b3b;
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        /* line-height carries the height, so the disc stays round however the page's
+           body line-height is set. */
+        line-height: 18px;
+        text-align: center;
+        /* Digits of one width, so 11 is as round as 99. */
+        font-variant-numeric: tabular-nums;
+    }
+
+    /*
+     * The hover panel, hanging off the basket link's bottom-right corner.
+     *
+     * It is a child of the anchor, not a sibling, which is what lets this be six lines of CSS and
+     * no JavaScript: hovering any part of it is still hovering the link, so it stays open on its
+     * own and clicking it follows the link to the basket like the rest of the anchor does.
+     *
+     * The ::before below is the one thing that is not free. The panel is offset far enough to clear
+     * the navbar's lower edge and read as hanging from the bar rather than from the icon, and that
+     * offset is a strip where the pointer is over neither the link nor the panel -- it would close
+     * on the way down. The pseudo-element fills the strip with a transparent part of the panel, so
+     * the pointer never leaves. Its height has to match the offset above it.
+     */
+    .nav-cart-panel {
+        position: absolute;
+        top: calc(100% + 18px);
+        right: 0;
+        /* Above the narrow-screen menu panel (20), below the toasts (1000 in main.css). */
+        z-index: 30;
+        display: none;
+        /* Wide enough that "Tulip Spring Bunch" and a four-figure price fit on one line with the
+           count between them. At 16rem the names started ellipsing two words in. */
+        width: 18rem;
+        padding: 12px 14px;
+        border: 1px solid #cbd7d1;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 6px 14px rgb(0 0 0 / 12%);
+        color: #333;
+        font-size: 0.85rem;
+        font-weight: 400;
+        line-height: 1.45;
+        text-align: left;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 100%;
+            height: 18px;
+        }
+    }
+
+    /*
+     * Hover is the whole interaction, so only offer it where hovering is a real thing the device
+     * does. On a touch screen :hover latches after a tap -- and that tap has already followed the
+     * link, so the panel would flash over the page the visitor just asked to leave.
+     *
+     * :focus-visible is outside the query on purpose: a keyboard tabbing through the navbar gets
+     * the panel on every device, and it is the only way to see it without a pointer.
+     */
+    @media (hover: hover) {
+        .nav-cart:hover .nav-cart-panel {
+            display: block;
+        }
+    }
+
+    .nav-cart:focus-visible .nav-cart-panel {
+        display: block;
+    }
+
+    .nav-cart-panel-head {
+        display: block;
+        margin-bottom: 8px;
+        color: #68736e;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .nav-cart-panel-empty {
+        display: block;
+        color: #68736e;
+    }
+
+    .nav-cart-panel-list {
+        display: grid;
+        gap: 6px;
+    }
+
+    /* Name, count, money. The name takes what is left and the two figures keep their width, so a
+       long custom-bouquet name cannot push the price out of the panel. */
+    .nav-cart-panel-line {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 8px;
+        align-items: baseline;
+    }
+
+    /* One line each, however long the name is -- four lines of two would make the panel a
+       different height on every page. */
+    .nav-cart-panel-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .nav-cart-panel-qty {
+        color: #68736e;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .nav-cart-panel-money {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Withdrawn, and not in the total -- the same struck-through treatment the basket page gives
+       it, so the two do not describe the same line differently. */
+    .nav-cart-panel-gone {
+        color: #68736e;
+
+        .nav-cart-panel-money {
+            text-decoration: line-through;
+        }
+    }
+
+    .nav-cart-panel-more {
+        display: block;
+        margin-top: 6px;
+        color: #68736e;
+        font-size: 0.8rem;
+    }
+
+    .nav-cart-panel-total {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #e2e8e5;
+        font-weight: 700;
+    }
+
+    .nav-cart-panel-figure {
+        color: #275a4a;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .nav-cart-panel-note {
+        display: block;
+        margin-top: 6px;
+        color: #6f5a13;
+        font-size: 0.75rem;
+    }
+
+    /* Not a button and not a link -- nothing in here can be either, since this sits inside an
+       anchor. It says out loud what clicking already does, which is the half of the interaction
+       that a hover panel otherwise hides. */
+    .nav-cart-panel-go {
+        display: block;
+        margin-top: 12px;
+        padding: 7px 10px;
+        border-radius: 4px;
+        background-color: #32715e;
+        color: #fff;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .nav-con2 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        order: 2;
+        /* Takes the free space, so the links sit right rather than being spread across the bar by
+           the navbar's own space-between now that a third child has joined the row. */
+        margin-left: auto;
+
+        .nav-user {
+            color: #32715e;
+            font-weight: 600;
+        }
+
+        .nav-logout {
+            display: flex;
+        }
+
+        /* Logout is a POST button, so strip the button chrome to match .nav-link */
+        .nav-logout-btn {
+            border: 0;
+            background: none;
+            font: inherit;
+            cursor: pointer;
+        }
+    }
+
+    /* Switched on by the media query below, and only for browsers running the
+       script -- see the comment in navbar.php. */
+    .nav-toggle {
+        display: none;
+        place-items: center;
+        padding: 8px;
+        border: 0;
+        border-radius: 4px;
+        background: none;
+        color: #333;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #ddd;
+        }
+
+        /* Show the cross instead of the bars while the menu is open. */
+        .icon-close {
+            display: none;
+        }
+
+        &[aria-expanded="true"] {
+            .icon-menu {
+                display: none;
+            }
+
+            .icon-close {
+                display: block;
+            }
+        }
+    }
+
+    /* Below this width the links no longer fit beside the logo. Left alone they
+       stretch the page wider than the screen and it scrolls sideways. */
+    @media (max-width: 720px) {
+        /* Only reached with no script running, where the menu stays in the flow and
+           wraps onto a second row. The scripted version floats it instead, below. */
+        flex-wrap: wrap;
+
+        /*
+         * Back into the first row, beside the logo and next to the menu button: order 3 was there
+         * to push it past the links on a desktop, and here the links are a panel below rather than
+         * a row beside. The auto margin is what keeps the basket and the menu button together on
+         * the right instead of letting the navbar's space-between strand the basket in the middle.
+         */
+        .nav-cart {
+            order: 0;
+            margin-left: auto;
+        }
+
+        .nav-con2 {
+            /* Full width so it wraps onto its own row under the logo. */
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 4px;
+            padding-top: 8px;
+
+            /* Roomier rows, because these are now being tapped rather than clicked. */
+            .nav-link,
+            .nav-user {
+                padding: 11px 12px;
+            }
+
+            /* A button centres its text where a link does not, so match the links. */
+            .nav-logout,
+            .nav-logout-btn {
+                width: 100%;
+                text-align: left;
+            }
+        }
+
+        /* script.js sets data-nav-js once it has wired the button up. */
+        &[data-nav-js] {
+            .nav-toggle {
+                display: grid;
+            }
+
+            .nav-con2 {
+                display: flex;
+
+                /* Taken out of the flow so opening the menu lays it over the page
+                   rather than pushing everything below it down. top: 100% pins it to
+                   the navbar's lower edge, so it never covers the navbar itself.
+                   .navbar is already position: sticky, which is what these offsets
+                   are measured against. */
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                /* left/right decide the width now, so drop the 100% set above. */
+                width: auto;
+                padding: 8px;
+                background-color: #fff;
+                /* The panel covers the navbar's own shadow, so draw the seam back in
+                   and give the panel a shadow of its own to lift it off the page. */
+                border-top: 1px solid #ececec;
+                box-shadow: 0px 4px 6px #dfdfdf;
+                /* Over the page content, under the toasts (z-index 1000 in main.css). */
+                z-index: 20;
+                visibility: hidden;
+                opacity: 0;
+                transform: translateY(-8px);
+                pointer-events: none;
+                transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 180ms;
+            }
+
+            &[data-nav-open] .nav-con2 {
+                visibility: visible;
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+                transition-delay: 0s;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .nav-con2 {
+                    transition: none;
+                }
+            }
+        }
+    }
+}
+
+/*
+===================================================================
+                            Footer
+===================================================================
+  */
+
+/*
+ * The site footer, drawn by components/footer.php on every page since 2026-09-22. Quiet on
+ * purpose: the same white as the navbar with a hairline on top, so the two bracket the page
+ * rather than compete with it, and nothing in it is a link -- the navbar has those.
+ *
+ * The inner width matches .page in main.css (1120px, 20px gutters), so the footer's text lines
+ * up with the content above it instead of drifting to the window edge on a wide screen.
+ */
+.site-footer {
+    /* No top margin: .page already ends in 64px of padding, and main pushes this to the bottom. */
+    padding: 28px 20px;
+    background-color: #fff;
+    border-top: 1px solid #e2e8e5;
+    color: #68736e;
+    font-size: 0.9rem;
+
+    .site-footer-inner {
+        width: min(100%, 1120px);
+        margin: 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px 32px;
+    }
+
+    .site-footer-name {
+        color: #2d3b35;
+        font-size: 1.05rem;
+        font-weight: bold;
+    }
+
+    /* The eyebrow treatment .page-eyebrow uses, so the tagline reads as a line, not a sentence. */
+    .site-footer-tagline {
+        margin-top: 4px;
+        color: #32715e;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .site-footer-legal {
+        line-height: 1.5;
+    }
+}
